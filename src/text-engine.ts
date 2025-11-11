@@ -16,7 +16,7 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 
 	for (const hop of lastUpdate.hops) {
 		const lastPortion = portions.at(-1)
-		// Merge networks that are both pending, both the same ASN, or both the same organization
+		// 合并同为等待状态、相同ASN或相同组织的网络
 		const keyMatches = lastPortion && lastPortion.key.kind === hop.kind
 			&& (hop.kind === 'Pending'
 				|| lastPortion.key.networkInfo?.asn === hop.networkInfo?.asn
@@ -36,7 +36,7 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		}
 	}
 
-	// Merge pending portions by sandwiching or favoring the first portion:
+	// 通过夹心合并或优先第一个部分来合并等待部分：
 	// - <[Comcast]> <[Pending]> <[Comcast]> -> <[Comcast, Pending, Comcast]>)
 	// - <[Comcast]> <[Pending]> <[Akamai]> -> <[Comcast, Pending]> <[Akamai]>
 	for (let i = 0; i < portions.length - 2; i++) {
@@ -60,11 +60,11 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 
 	// console.log(portions.map(p => p.hops.map(h => h.kind === 'Done' ? h.hostname ?? h.ip : '(pending)')))
 
-	// Yeet the last portion into its own variable
+	// 将最后一部分提取到单独的变量中
 	const lastHops = portions.pop()!.hops
 	let prevHop = portions[0].hops[0]
 
-	// Start text generation
+	// 开始文本生成
 	const paragraphs: string[] = []
 	let lastWasSideNote = false
 	function pushParagraph(text: string) {
@@ -90,35 +90,35 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		const count = networkTypeCounts[networkType]
 		networkTypeCounts[networkType]++
 		
-		let long: string  // Full name, including the article ("an" or "a")
-		let short: string // Abbreviation or single word only
-		let shortArticle: string | null   // The article that would accompany short, or null if long is required
-		let shortSupportsAnother: boolean // Whether short works with "another" as a prefix
+		let long: string  // 完整名称，包括冠词("an"或"a")
+		let short: string // 仅缩写或单词
+		let shortArticle: string | null   // 伴随short的冠词，如果必须使用long则为null
+		let shortSupportsAnother: boolean // short是否支持"another"作为前缀
 
 		switch (networkType) {
 			case 'Nsp': {
-				long = 'a network service provider, a company that sells Internet access to other companies'
+				long = '一个网络服务提供商，一家向其他公司销售互联网接入的公司'
 				short = 'NSP'
 				shortArticle = 'a'
 				shortSupportsAnother = true
 				break
 			}
 			case 'Content': {
-				long = 'a content delivery network'
+				long = '一个内容分发网络'
 				short = 'CDN'
 				shortArticle = 'a'
 				shortSupportsAnother = true
 				break
 			}
 			case 'Isp': {
-				long = 'an Internet service provider'
+				long = '一个互联网服务提供商'
 				short = 'ISP'
 				shortArticle = 'an'
 				shortSupportsAnother = true
 				break
 			}
 			case 'NspOrIsp': {
-				long = 'either an ISP or a provider that sells Internet access to other companies'
+				long = '要么是一个ISP，要么是向其他公司销售互联网接入的提供商'
 				short = 'NSP/ISP'
 				shortArticle = 'an'
 				shortSupportsAnother = true
@@ -126,53 +126,53 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 			}
 
 			case 'Enterprise': {
-				long = `a big enterprise network`
+				long = `一个大型企业网络`
 				short = 'enterprise'
 				shortArticle = 'an'
 				shortSupportsAnother = false
 				break
 			}
 			case 'Educational': {
-				long = 'some educational establishment'
+				long = '某个教育机构'
 				short = 'edu'
 				shortArticle = null
 				shortSupportsAnother = false
-				if (needsArticle && count === 1) return 'another educational establishment'
+				if (needsArticle && count === 1) return '另一个教育机构'
 				break
 			}
 			case 'NonProfit': {
-				long = 'a nonprofit-owned network'
+				long = '一个非营利组织拥有的网络'
 				short = 'nonprofit'
 				shortArticle = 'a'
 				shortSupportsAnother = false
 				break
 			}
 			case 'Government': {
-				long = 'a government-owned network'
+				long = '一个政府拥有的网络'
 				short = 'government'
 				shortArticle = null
 				shortSupportsAnother = false
-				if (needsArticle && count === 1) return 'another government network'
+				if (needsArticle && count === 1) return '另一个政府网络'
 				break
 			}
 
 			case 'RouteServer': {
-				long = 'associated with a route server, which helps manage BGP sessions but doesn’t necessarily have its own network'
+				long = '与路由服务器关联，它帮助管理BGP会话但不一定拥有自己的网络'
 				short = 'route server'
 				shortArticle = 'a'
 				shortSupportsAnother = true
 				break
 			}
 			case 'NetworkServices': {
-				long = 'a network infrastructure provider'
+				long = '一个网络基础设施提供商'
 				short = 'infrastructure'
 				shortArticle = null
 				shortSupportsAnother = false
-				if (needsArticle && count === 1) return 'another infrastructure provider'
+				if (needsArticle && count === 1) return '另一个基础设施提供商'
 				break
 			}
 			case 'RouteCollector': {
-				long = 'a route collector, a network that just tries to ingest all BGP routes'
+				long = '一个路由收集器，一个只尝试接收所有BGP路由的网络'
 				short = 'route collector'
 				shortArticle = 'a'
 				shortSupportsAnother = true
@@ -181,7 +181,7 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 
 			case 'Other': {
 				if (needsArticle) {
-					return `which I couldn't find much about`
+					return `我找不到太多相关信息`
 				} else {
 					return '???'
 				}
@@ -191,7 +191,7 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		if (count === 0) {
 			return long
 		} else if (count === 1 && shortSupportsAnother) {
-			return 'another ' + short
+			return '另一个 ' + short
 		} else if (needsArticle) {
 			return shortArticle + ' ' + short
 		} else {
@@ -209,9 +209,9 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		} else {
 			unknownNetworkCount++
 			if (unknownNetworkCount === 1) {
-				return 'an unidentified network'
+				return '一个未识别的网络'
 			} else {
-				return 'another unidentified network'
+				return '另一个未识别的网络'
 			}
 		}
 	}
@@ -232,39 +232,39 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 			for (const hop of portion.hops) if (hop.kind === 'Done' && hop.networkInfo?.network) uniqueNetworks.add(hop.networkInfo.network.id)
 
 			let text = ''
-			text += includesFirst ? `Starting at ` : `Traveling from `
-			text += thatRouter ? 'that router, ' : 'your router, '
-			text += 'the first portion of your trip went through '
-			text += portion.size === 1 ? 'a device ' : 'devices '
-			text += `in ${network.organization.name.trim()}’s `
-			text += uniqueNetworks.size <= 1 ? 'network' : 'networks'
-			if (!areNamesSimilar(network.name, network.organization.name)) text += `, ${network.name.trim()}`
-			text += '. '
+			text += includesFirst ? `从 ` : `从 `
+			text += thatRouter ? '那个路由开始，' : '你的路由开始，'
+			text += '你的旅程的第一部分经过了'
+			text += portion.size === 1 ? '一个设备 ' : '多个设备 '
+			text += `在${network.organization.name.trim()}的`
+			text += uniqueNetworks.size <= 1 ? '网络中' : '多个网络中'
+			if (!areNamesSimilar(network.name, network.organization.name)) text += `，${network.name.trim()}`
+			text += '。'
 
 			if (network.networkType === 'Isp') {
 				networkTypeCounts['Isp']++
-				text += `That’s probably your ISP, responsible for connecting you to the Internet in exchange for money.`
+				text += `那很可能是你的ISP，负责通过收费将你连接到互联网。`
 			} else if (network.networkType === 'Nsp' || network.networkType === 'NspOrIsp') {
-				networkTypeCounts['Isp']++ // Not a typo
-				text += `That’s either your ISP, responsible for connecting you to the Internet in exchange for money, or a company your Internet provider contracts.`
+				networkTypeCounts['Isp']++ // 不是拼写错误
+				text += `那要么是你的ISP，负责通过收费将你连接到互联网，要么是你的互联网提供商签约的公司。`
 			} else {
 				text += `
-					That’s the first network I have any info on; chances are whoever handles your Internet is paying them
-					for Internet access or they're your VPN provider.
+					那是我能找到信息的第一个网络；很可能处理你互联网接入的人正在向他们付费
+					获取互联网接入，或者他们是你的VPN提供商。
 				`
 			}
 
 			pushParagraph(text)
 		} else if (portion.key.networkInfo) {
 			pushParagraph(`
-				The first portion of your trip went through ${portion.size === 1 ? 'a device' : 'devices'} in the network
-				AS${portion.key.networkInfo.asn}. I couldn’t find any information on it aside from its autonomous system number,
-				but chances are whoever handles your Internet is paying them for Internet access or they're your VPN provider.
+				你的旅程的第一部分经过了${portion.size === 1 ? '一个设备' : '多个设备'}在网络
+				AS${portion.key.networkInfo.asn}中。我除了它的自治系统号码外找不到任何相关信息，
+				但很可能处理你互联网接入的人正在向他们付费获取互联网接入，或者他们是你的VPN提供商。
 			`)
 		} else {
 			pushParagraph(`
-				After ${thatRouter ? 'that' : 'your'} router, you took a trip through ${portion.size === 1 ? 'a device ' : 'some devices'} in an unidentified network,
-				probably internal to whatever network your computer is connected to.
+				在${thatRouter ? '那个' : '你的'}路由之后，你经过了一个未识别网络中的${portion.size === 1 ? '一个设备' : '一些设备'}，
+				很可能是在你计算机连接的任何网络内部。
 			`)
 		}
 		clarifyNoResponseIfNeeded(portion.hops, false)
@@ -274,10 +274,10 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 	function clarifyHostname(hop: Hop_Done) {
 		if (didClarifyHostname) return
 		pushParagraph(`
-			(Side note, that ${hop.hostname} thing is the result of a reverse DNS lookup I did by asking my DNS server
-			if there’s any name associated with the IP actually returned in the traceroute, ${hop.ip}. Since there was, I used the “pretty” human-readable
-			name instead of the numbers. Reverse DNS names are usually only designed to make debugging easier, and often
-			don’t even map back to the original IP.)
+			（旁注，那个${hop.hostname}是我通过反向DNS查找的结果，我询问我的DNS服务器
+			是否有任何名称与追踪路由中实际返回的IP ${hop.ip}相关联。由于有，我使用了"美观的"人类可读的
+			名称而不是数字。反向DNS名称通常只是为了更容易调试而设计，而且通常
+			甚至无法映射回原始IP。）
 		`)
 		lastWasSideNote = true
 		didClarifyHostname = true
@@ -288,17 +288,17 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		if (didClarifyNoResponse) return
 		if (hops.some(h => h.kind === 'Pending')) {
 			pushParagraph(`
-				${isNextProbe ? `We didn’t actually get a response from the next probe.` : `By the way, see that “(no response)”?`}
-				There will often be a couple of those in the traceroute — not every server will consistently respond to us
-				and the Internet is unreliable! It’s a shame, but we can still get a pretty good idea of what’s going on
-				from the servers that do respond.
+				${isNextProbe ? `我们实际上没有从下一个探测得到响应。` : `顺便说一下，看到那个"(无响应)"了吗？`}
+				追踪路由中经常会有一些这样的——不是每个服务器都会持续响应我们，
+				而且互联网是不可靠的！这很遗憾，但我们仍然可以从确实响应的服务器中
+				很好地了解发生了什么。
 			`)
 			lastWasSideNote = true
 			didClarifyNoResponse = true
 		}
 	}
 	
-	// Beginning and first segment
+	// 开始和第一段
 	let isStraightEntryFromIsp = true
 	{
 		const portion = portions.shift()!
@@ -306,40 +306,40 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		const user = portion.hops.shift()!
 		if (user.kind === 'Pending') {
 			pushParagraph(`
-				This journey began with your computer talking to your router. That router, your entrypoint to your ISP’s network,
-				didn’t actually respond to my ping — this is pretty common for public routers or if you're behind a VPN — so we
-				just have to imagine its existence at the start of the traceroute.
+				这个旅程始于你的计算机与你的路由通信。那个路由，你进入ISP网络的入口点，
+				实际上没有响应我的ping——这对于公共路由或者如果你在VPN后面是很常见的——所以我们
+				只能在追踪路由的开头想象它的存在。
 			`)
-			// Note: there can never be a second pending hop at the start of the traceroute, they're pruned beforehand.
+			// 注意：在追踪路由的开头永远不可能有第二个等待的hop，它们事先被修剪了。
 			const nextPortion = portions.shift()
 			if (nextPortion) firstSegment(nextPortion, false, false)
 		} else { // Done
 			if (user.networkInfo?.network?.networkType === 'Isp') {
 				pushParagraph(`
-					This journey began with your computer talking to your router. That router, your entrypoint to your ISP’s
-					network, is the first item you’ll see in the traceroute ${user.hostname ? 'and is associated with' : 'alongside'}
-					your public IP: ${user.ip}.
+					这个旅程始于你的计算机与你的路由通信。那个路由，你进入ISP
+					网络的入口点，是你在追踪路由中会看到的第一个项目${user.hostname ? '并且与' : '以及'}
+					你的公共IP：${user.ip}相关联。
 				`)
 			} else {
 				pushParagraph(`
-					This journey began with your computer talking to your router. That router, your entrypoint to the Internet,
-					may be the first item you see in the traceroute (${user.hostname ? 'associated with' : 'alongside'} your
-					public IP, ${user.ip}). Alternately, you may be behind a VPN of some sort — in that case, the earliest point
-					we can track is the Internet-facing router that your packets are being sent through.
+					这个旅程始于你的计算机与你的路由通信。那个路由，你进入互联网的入口点，
+					可能是你在追踪路由中看到的第一个项目（${user.hostname ? '与' : '以及'}你的
+					公共IP，${user.ip}）。或者，你可能在某种VPN后面——在这种情况下，我们能追踪到的最早点
+					是你的数据包正在通过的面向互联网的路由。
 				`)
 			}
 			
-			if (portion.size === 0) { // Only first hop was in this portion
+			if (portion.size === 0) { // 只有第一个hop在这个部分中
 				const nextPortion = portions.shift()
 				if (nextPortion) firstSegment(nextPortion, false, true)
-			} else { // >= 1 remaining
+			} else { // >= 1 剩余
 				firstSegment(portion, true, true)
 			}
 		}
 	}
 
-	// This is stupid, but from now on we only care about network-level, not org-level,
-	// so we have to re-chunk the portions by ASN
+	// 这很愚蠢，但从现在开始我们只关心网络级别，而不是组织级别，
+	// 所以我们必须按ASN重新分块
 	for (let i = 0; i < portions.length; i++) {
 		for (let j = 1; j < portions[i].hops.length; j++) {
 			const hop = portions[i].hops[j]
@@ -354,7 +354,7 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		}
 	}
 	
-	// Intermediate segments
+	// 中间段
 	let intermediates: '0' | '1-3' | '4+' = '0'
 	{
 		if (!isStraightEntryFromIsp && portions[0]?.key?.kind === 'Pending') {
@@ -371,38 +371,38 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 			if (network) {
 				const [ netName, orgName ] = [ network.name.trim(), network.organization.name.trim() ]
 				if (areNamesSimilar(netName, orgName)) {
-					prefix = `You took an intermediate jump through ${netName}`
+					prefix = `你通过${netName}进行了一个中间跳跃`
 					description = describeNetworkType(network.networkType, true)
 				} else {
-					prefix = `You took an intermediate jump through ${netName}, a network owned by ${orgName}`
+					prefix = `你通过${netName}进行了一个中间跳跃，这是一个由${orgName}拥有的网络`
 					description = describeNetworkType(network.networkType, true)
 				}
 			} else {
-				prefix = `You took an intermediate jump through AS${doneRemaining[0].key.networkInfo!.asn}`
+				prefix = `你通过AS${doneRemaining[0].key.networkInfo!.asn}进行了一个中间跳跃`
 				description = describeNetworkType('Other', true)
 			}
 
 			if (description.includes(',')) {
-				pushParagraph(`${prefix}. They're ${description}.`)
+				pushParagraph(`${prefix}。他们是${description}。`)
 			} else {
-				pushParagraph(`${prefix}, ${description}.`)
+				pushParagraph(`${prefix}，${description}。`)
 			}
 		} else if (doneRemaining.length === 2) {
 			intermediates = '1-3'
 			pushParagraph(`
-				Next, you jumped through two networks: ${describePortionTersely(doneRemaining[0])} and ${describePortionTersely(doneRemaining[1])}.
+				接下来，你跳过了两个网络：${describePortionTersely(doneRemaining[0])}和${describePortionTersely(doneRemaining[1])}。
 			`)
 		} else if (doneRemaining.length >= 3) {
 			intermediates = '1-3'
 			if (doneRemaining.length >= 4) intermediates = '4+'
 			pushParagraph(`
-				Next, you took a long and meandering path through ${doneRemaining.slice(0, -1).map(describePortionTersely).join(', ')},
-				${doneRemaining.length >= 4 ? 'and finally' : 'and'} ${describePortionTersely(doneRemaining.at(-1)!)}.
+				接下来，你经过了一条漫长而曲折的路径，通过了${doneRemaining.slice(0, -1).map(describePortionTersely).join('、')}，
+				${doneRemaining.length >= 4 ? '最后' : '和'}${describePortionTersely(doneRemaining.at(-1)!)}。
 			`)
 		}
 
 		for (const portion of portions) {
-			if (!isStraightEntryFromIsp && portion === portions.at(-1)) { // Not the last one yet, because this might be a transition to the end
+			if (!isStraightEntryFromIsp && portion === portions.at(-1)) { // 还不是最后一个，因为这可能是到结束的过渡
 				clarifyNoResponseIfNeeded(portion.hops, false)
 			}
 			isStraightEntryFromIsp = false
@@ -410,7 +410,7 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		}
 	}
 
-	// Ending
+	// 结束
 	{
 		function isServer(hop: Hop): hop is Hop_Done {
 			return hop.kind === 'Done' && hop.ip === SERVER_IP && hop.hostname === SERVER_HOST
@@ -420,14 +420,14 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 		}
 
 		const getPrefix = () => isStraightEntryFromIsp
-			? 'Anyways'
+			? '总之'
 			: {
-				'0':   `${lastWasSideNote ? 'Anyways, a' : 'A'}fter a couple of hops`,
-				'1-3': 'Eventually',
-				'4+':  'After all that',
+				'0':   `${lastWasSideNote ? '总之，在' : '在'}几次跳跃之后`,
+				'1-3': '最终',
+				'4+':  '在所有这些之后',
 			}[intermediates]
 		if (isHetznerEntrypoint(lastHops[0])) {
-			// Easy, we have the Hetzner entrypoint
+			// 简单，我们有Hetzner入口点
 			
 			if (!isStraightEntryFromIsp) {
 				clarifyNoResponseIfNeeded((portions.at(-1)?.hops ?? []).slice(-1), true)
@@ -436,25 +436,25 @@ export function generateText(lastUpdate: ControllerResult_TraceDone) {
 
 			const prevNetworkName = (prevHop.kind === 'Done' && prevHop.networkInfo?.network?.name.trim?.())
 				|| (prevHop.kind === 'Done' && prevHop.networkInfo?.network?.asn && 'AS' + prevHop.networkInfo.network.asn)
-				|| 'that network'
+				|| '那个网络'
 
 			pushParagraph(`
-				${getPrefix()}, you needed to leave the realm of ${prevNetworkName}
-				to reach my server.
-				I use Hetzner as a hosting provider, and your entrypoint into their network was ${lastHops[0].hostname ?? lastHops[0].ip}.
-				From there, you were bounced around Hetzner’s internal network a bit before finally reaching my server.
+				${getPrefix()}，你需要离开${prevNetworkName}的领域
+				才能到达我的服务器。
+				我使用Hetzner作为托管提供商，你进入他们网络的入口点是${lastHops[0].hostname ?? lastHops[0].ip}。
+				从那里，你在Hetzner的内部网络中被跳转了几次，最终到达我的服务器。
 			`)
 			if (lastHops[0].hostname) clarifyHostname(lastHops[0])
 		} else {
-			// We don't have the Hetzner endpoint
+			// 我们没有Hetzner端点
 			
 			let unknownHopCount = 0
 			while (lastHops.at(-1 - unknownHopCount)?.kind === 'Pending') unknownHopCount++
 
 			pushParagraph(`
-				${getPrefix()}, we have ${didClarifyNoResponse ? 'another' : 'a'} probe that didn't respond.
-				${unknownHopCount >= 2 ? 'One of these' : 'This'} is most likely your entrypoint to Hetzner’s network (they're my hosting provider).
-				From there, you were bounced around Hetzner’s internal network a bit before finally reaching my server.
+				${getPrefix()}，我们有${didClarifyNoResponse ? '另一个' : '一个'}没有响应的探测。
+				${unknownHopCount >= 2 ? '其中之一' : '这'}很可能是你进入Hetzner网络的入口点（他们是我的托管提供商）。
+				从那里，你在Hetzner的内部网络中被跳转了几次，最终到达我的服务器。
 			`)
 		}
 	}
@@ -467,11 +467,11 @@ export function generateEssayTracerouteInfo(hops: Hop[]) {
 		.map(hop => hop.kind === 'Done' ? hop.networkInfo?.asn ?? null : null)
 		.filter(asn => asn !== null) as number[]
 
-	// Calculate frequency of different networks
+	// 计算不同网络的频率
 	const frequency: Record<number, number> = {}
 	for (let i = 0; i < hopAsns.length; i++) frequency[hopAsns[i]] = (frequency[hopAsns[i]] ?? 0) + 1
 
-	// Get ASN with highest frequency
+	// 获取频率最高的ASN
 	let highestFrequency = 0
 	let highestFrequencyAsn: number | null = null
 	for (const [ asn, freq ] of Object.entries(frequency)) {
@@ -482,7 +482,7 @@ export function generateEssayTracerouteInfo(hops: Hop[]) {
 		}
 	}
 	if (highestFrequency <= 2) {
-		// Try again but allow Hetzner (yeah I know this is probably bad code)
+		// 再次尝试但允许Hetzner（是的，我知道这可能是不好的代码）
 		for (const [ asn, freq ] of Object.entries(frequency)) {
 			if (freq > highestFrequency) {
 				highestFrequency = freq
@@ -491,7 +491,7 @@ export function generateEssayTracerouteInfo(hops: Hop[]) {
 		}
 	}
 
-	// Find the network info of that ASN
+	// 找到那个ASN的网络信息
 	let highestFrequencyNetworkInfo: NetworkInfo | null = null
 	for (const hop of hops) {
 		if (hop.kind === 'Done' && hop.networkInfo?.asn === highestFrequencyAsn) {
@@ -499,13 +499,13 @@ export function generateEssayTracerouteInfo(hops: Hop[]) {
 			break
 		}
 	}
-	const cardinals = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine' ]
+	const cardinals = [ '一', '二', '三', '四', '五', '六', '七', '八', '九' ]
 	const showHighestFrequencyNetwork = highestFrequency >= 2
 	const highestFrequencyNetworkName = highestFrequencyNetworkInfo?.network?.name.trim() ?? ('AS' + highestFrequencyAsn)
-	const highestFrequencyNetworkCount = (highestFrequency <= 3 ? 'the ' : 'all ')
+	const highestFrequencyNetworkCount = (highestFrequency <= 3 ? '这 ' : '所有 ')
 		+ (cardinals[highestFrequency - 1] ?? highestFrequency.toString())
 
-	// Deduplicate
+	// 去重
 	for (let i = 0; i < hopAsns.length - 1; i++) {
 		if (hopAsns[i] === hopAsns[i + 1]) {
 			hopAsns.splice(i, 1)
