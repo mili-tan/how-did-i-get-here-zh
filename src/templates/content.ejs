@@ -3,7 +3,7 @@
 		<div class='terminal-inner'>
 			<h1>ktr [v<%= pageGlobals.ktrVersion %>]</h1>
 			<div class='metadata'>
-				<div class='hostinfo'>your device (<%= pageGlobals.userIp %>) -> <%= pageGlobals.serverHost %> (<%= pageGlobals.serverIp %>)</div>
+				<div class='hostinfo'>你的设备 (<%= pageGlobals.userIp %>) -> <%= pageGlobals.serverHost %> (<%= pageGlobals.serverIp %>)</div>
 				<div class='date'><%= pageGlobals.isoDate %></div>
 			</div>
 
@@ -18,7 +18,7 @@
 			
 			<ol class='traceroute'>
 				<% if (!isTraceDone && hops.length < 2) { %>
-					<li class='pending'>(traceroute is loading...)</li>
+					<li class='pending'>(追踪路由正在加载...)</li>
 				<% } %>
 
 				<% for (let i = 0; i < hops.length; i++) { %>
@@ -27,18 +27,18 @@
 					<% if (hop.kind === 'Pending') { %>
 						<% if (isTraceDone && i === 0) { %>
 							<li class='no-response'>
-								<div class='landmark you'>You are here -></div>
+								<div class='landmark you'>你在此处 -></div>
 								<%= pageGlobals.userIp %>
-								<span class='hide-when-inline-landmark'>(no response)</span>
+								<span class='hide-when-inline-landmark'>(无响应)</span>
 							</li>
 						<% } else if (isTraceDone) { %>
-							<li class='no-response'>(no response)</li>
+							<li class='no-response'>(无响应)</li>
 						<% } else { %>
 							<% const secs = (Math.max(Date.now() - hop.since, 0) / 1000).toFixed(1) %>
 							<% if (secs >= 1) { %>
-								<li class='pending'>(waiting for reply... <%= secs %>s)</li>
+								<li class='pending'>(等待回复... <%= secs %>秒)</li>
 							<% } else { %>
-								<li class='pending'>(waiting for reply)</li>
+								<li class='pending'>(等待回复)</li>
 							<% } %>
 						<% } %>
 					<% } else { %>
@@ -46,7 +46,7 @@
 							<div class='host'>
 								<% if (i === hops.length - 1) { %>
 									<div class='landmark server'>
-										Our server
+										我们的服务器
 										<span class='hide-when-inline-landmark'>-></span>
 									</div>
 								
@@ -55,7 +55,7 @@
 									</span>
 								<% } else if ((isTraceDone && i === 0) || hop.ip === pageGlobals.userIp) { %>
 									<div class='landmark you'>
-										You are here
+										你在此处
 										<span class='hide-when-inline-landmark'>-></span>
 									</div>
 			
@@ -75,7 +75,7 @@
 									<% if (scope && scope !== 'Other' && scope !== 'Regional') { %>
 										<%= scope %>
 									<% } else if (scope === 'Regional') { %>
-										(Regional)
+										(区域)
 									<% } %>
 								</div>
 							<% } else { %>
@@ -91,22 +91,19 @@
 	</section>
 
 	<section class='text'>
-		<p style='font-style: italic'>Seems like this hit the Hacker News front page again, and my server's having some trouble serving all of you. I made some hotfixes and the traceroutes seem to be working again, but you might need to be a bit patient :)</p>
-		<p style='font-style: italic; margin-bottom: 32px;'>- Lexi, Nov 7, 4:19 PM PST</p>
+		<p style='font-style: italic'>看起来这个页面又登上了Hacker News首页，我的服务器在为大家提供服务时遇到了一些问题。我做了一些紧急修复，追踪路由似乎又能正常工作了，但您可能需要耐心等待一下 :)</p>
+		<p style='font-style: italic; margin-bottom: 32px;'>- Lexi, 11月7日 太平洋标准时间下午4:19</p>
 	</section>
 
 	<section class='text'>
 		<% if (pageGlobals.paragraphs || pageGlobals.error) { %>
 			<% if (pageGlobals.error) { %>
-				<p>Hey, sorry, my traceroute program was buggy or something and crashed when trying to generate this page for you. Below, you can still read an article about how this page would normally work.</p>
-				<p>Diagnostic information: <%= pageGlobals.error.message %> (<%= pageGlobals.error.kind %>)</p>
-				<p>You might be able to try again in a bit.</p>
+				<p>抱歉，我的追踪路由程序出现了一些问题，在尝试为您生成此页面时崩溃了。下面您仍然可以阅读关于这个页面正常工作时如何运作的文章。</p>
+				<p>诊断信息: <%= pageGlobals.error.message %> (<%= pageGlobals.error.kind %>)</p>
+				<p>您或许也可以稍后再试。</p>
 			<% } else { %>
 				<p>
-					The above text dump is a traceroute. This particular one depicts your journey — or at least your
-					packets’ journey — traversing the networks of the Internet to reach the server hosting this website. The preceeding
-					traceroute and <span class='generated'>all future green-glowing text</span> was generated on the fly, specially for you, during the loading of
-					this website.
+					上方的文本转储是一次追踪路由。这个特定的路由描绘了您的旅程——或者至少是您的数据包旅程——穿越互联网的网络以到达托管本网站的服务器。前面的追踪路由和<span class='generated'>所有未来发出绿色荧光的文本</span>都是在加载本网站期间专门为您实时生成的。
 				</p>
 				<div class='generated'>
 					<% for (const paragraph of pageGlobals.paragraphs) { %>
@@ -115,7 +112,7 @@
 				</div>
 			<% } %>
 		<% } else { %>
-			<p class='generated'>This part of the page is still loading while I wait for the above traceroute to load.</p>
+			<p class='generated'>这部分页面仍在加载，我正在等待上方的追踪路由加载完成。</p>
 		<% } %>
 
 		<img class='divider' src='/divider.svg' role='separator' alt=''>
